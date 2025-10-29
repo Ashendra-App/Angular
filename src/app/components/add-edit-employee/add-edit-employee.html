@@ -1,0 +1,30 @@
+<div style="text-align: center; margin-bottom: 10px">
+  <button class="add-btn" (click)="goBack()">⬅ Back</button>
+</div>
+<form id="employeeForm" [formGroup]="form">
+  <div style="padding: 16px">
+    <h3 id="formTitle">Add Employee</h3>
+
+    <label for="empName">Name:</label>
+    <input type="text" formControlName="name" />
+
+    <label for="empDept">Department:</label>
+    <input type="text" formControlName="deptName" />
+
+    <label for="empEmail">Email:</label>
+    <input type="email" formControlName="email" />
+  </div>
+  <div style="text-align: center">
+    <button type="button" (click)="resetData()" style="width: 25%">
+      Reset
+    </button>
+    <button
+      type="submit"
+      class="add-btn"
+      (click)="saveData()"
+      style="width: 25%"
+    >
+      Save
+    </button>
+  </div>
+</form>

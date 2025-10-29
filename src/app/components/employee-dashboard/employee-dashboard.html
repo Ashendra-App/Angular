@@ -1,0 +1,32 @@
+<input type="text" id="username" /> <br /><br /><input
+  type="text"
+  id="password"
+/><br />
+<div style="text-align: center; margin-bottom: 10px">
+  <button class="add-btn" (click)="addEmp()">➕ Add Employee</button>
+</div>
+<table id="employeeTable">
+  <thead>
+    <tr>
+      <th>Employee ID</th>
+      <th>Name</th>
+      <th>Department</th>
+      <th>Email</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (emp of empData; track emp) {
+    <tr>
+      <td>{{ emp?.id }}</td>
+      <td>{{ emp?.name }}</td>
+      <td>{{ emp?.deptName }}</td>
+      <td>{{ emp?.email }}</td>
+      <td>
+        <button class="edit-btn" (click)="editRow(emp)">✏️ Edit</button>
+        <button class="delete-btn" (click)="deleteRow(emp)">🗑 Delete</button>
+      </td>
+    </tr>
+    }
+  </tbody>
+</table>
