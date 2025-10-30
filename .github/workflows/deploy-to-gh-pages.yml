@@ -69,3 +69,5 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx angular-cli-ghpages --dir=dist/Angular --no-silent --message "Deploy from GitHub Actions"
+
+# ssasas
