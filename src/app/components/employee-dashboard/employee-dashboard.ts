@@ -175,6 +175,6 @@ export class EmployeeDashboard {
 
   sub!: Subscription;
   ngOnDestroy() {
-    // this.sub.unsubscribe();
+    this.sub.unsubscribe();
   }
 }
