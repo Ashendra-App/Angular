@@ -52,22 +52,23 @@ jobs:
           ')
           echo "output=$OUTPUT" >> $GITHUB_OUTPUT
 
-      - name: Verify build output & deploy
+      - name: Verify build output & Deploy (find index.html anywhere)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          BUILD_DIR="${{ steps.detect-output.outputs.output }}"
-          echo "Detected build directory: $BUILD_DIR"
-          if [ -z "$BUILD_DIR" ]; then
-            echo "ERROR: outputPath detection failed."
+          BUILD_DIR="dist/ngxs"   # detected outputPath; leave as-is
+          echo "Searching for index.html under: $BUILD_DIR"
+          find "$BUILD_DIR" -maxdepth 6 -type f -name 'index.html' -print -quit > /tmp/found_index || true
+          IDX=$(cat /tmp/found_index || true)
+          if [ -z "$IDX" ]; then
+            echo "❌ No index.html found under $BUILD_DIR (searched depth 6)."
+            echo "Directory tree (files up to depth 3):"
+            find "$BUILD_DIR" -maxdepth 3 -type f -printf '%P\n' || true
             exit 1
           fi
-          # show contents for debugging
-          echo "Listing $BUILD_DIR:"
-          ls -la "$BUILD_DIR" || true
-          if [ ! -f "$BUILD_DIR/index.html" ]; then
-            echo "❌ $BUILD_DIR/index.html not found! Build may have failed or outputPath is wrong."
-            exit 1
-          fi
-          echo "Deploying from $BUILD_DIR to GitHub Pages..."
-          npx angular-cli-ghpages --dir="$BUILD_DIR" --no-silent --message "Deploy from GitHub Actions"
+          TARGET_DIR=$(dirname "$IDX")
+          echo "Found index.html at: $IDX"
+          echo "Deploying directory: $TARGET_DIR"
+          ls -la "$TARGET_DIR" || true
+          npx angular-cli-ghpages --dir="$TARGET_DIR" --no-silent --message "Deploy from GitHub Actions"
+
