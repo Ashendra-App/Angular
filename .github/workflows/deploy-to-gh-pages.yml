@@ -3,7 +3,7 @@ name: Deploy Angular to GitHub Pages
 on:
   push:
     branches:
-      - main   # change if your default branch is different
+      - main
 
 jobs:
   deploy:
@@ -17,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'   # Angular CLI requires >= v20.19
+          node-version: '20.x'
 
       - name: Install dependencies (with retry)
         run: |
@@ -52,23 +52,38 @@ jobs:
           ')
           echo "output=$OUTPUT" >> $GITHUB_OUTPUT
 
-      - name: Verify build output & Deploy (find index.html anywhere)
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Find index.html and set TARGET_DIR
+        id: find-index
         run: |
-          BUILD_DIR="dist/ngxs"   # detected outputPath; leave as-is
+          BUILD_DIR="${{ steps.detect-output.outputs.output }}"
+          if [ -z "$BUILD_DIR" ]; then
+            echo "ERROR: outputPath detection failed."
+            exit 1
+          fi
           echo "Searching for index.html under: $BUILD_DIR"
-          find "$BUILD_DIR" -maxdepth 6 -type f -name 'index.html' -print -quit > /tmp/found_index || true
-          IDX=$(cat /tmp/found_index || true)
+          IDX=$(find "$BUILD_DIR" -maxdepth 6 -type f -name 'index.html' -print -quit || true)
           if [ -z "$IDX" ]; then
             echo "❌ No index.html found under $BUILD_DIR (searched depth 6)."
-            echo "Directory tree (files up to depth 3):"
             find "$BUILD_DIR" -maxdepth 3 -type f -printf '%P\n' || true
             exit 1
           fi
           TARGET_DIR=$(dirname "$IDX")
+          echo "target=$TARGET_DIR" >> $GITHUB_OUTPUT
           echo "Found index.html at: $IDX"
-          echo "Deploying directory: $TARGET_DIR"
           ls -la "$TARGET_DIR" || true
-          npx angular-cli-ghpages --dir="$TARGET_DIR" --no-silent --message "Deploy from GitHub Actions"
 
+      - name: Configure git identity (required for gh-pages commit)
+        run: |
+          # Use the GitHub Actions actor to form a valid identity
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git --version
+          git config --list
+
+      - name: Deploy to GitHub Pages (auto-target)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TARGET="${{ steps.find-index.outputs.target }}"
+          echo "Deploying from: $TARGET"
+          npx angular-cli-ghpages --dir="$TARGET" --no-silent --message "Deploy from GitHub Actions"
