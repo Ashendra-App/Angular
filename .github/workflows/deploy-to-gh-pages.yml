@@ -1,44 +1,14 @@
-# name: Deploy Angular to GitHub Pages
-
-# on:
-#   push:
-#     branches:
-#       - development # change to your default branch if not 'main'
-
-# jobs:
-#   deploy:
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v4
-
-#       - name: Use Node.js 22.17.0
-#         uses: actions/setup-node@v4
-#         with:
-#           node-version: "22.17.0"
-
-#       - name: Install dependencies
-#         run: npm ci
-
-#       - name: Build (production)
-#         run: npm run build -- --configuration=production
-
-#       - name: Deploy to GitHub Pages
-#         env:
-#           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#         run: npx angular-cli-ghpages --dir=dist/ngxs --no-silent --message "Deploy from GitHub Actions"
-
 name: Deploy Angular to GitHub Pages
 
 on:
   push:
     branches:
-      - main # 👈 change if your default branch is different
+      - main   # change if your default branch is different
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
@@ -47,27 +17,57 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20.x" # 👈 Angular CLI requires >= v20.19
+          node-version: '20.x'   # Angular CLI requires >= v20.19
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install dependencies (with retry)
+        run: |
+          RETRY=0
+          until [ $RETRY -ge 3 ]
+          do
+            npm ci && break
+            RETRY=$((RETRY+1))
+            echo "npm ci failed — retry #$RETRY"
+            sleep 3
+          done
+          if [ $RETRY -ge 3 ]; then
+            echo "npm ci failed after 3 attempts"
+            exit 1
+          fi
 
       - name: Build Angular app
         run: npm run build -- --configuration=production
 
-      - name: Verify build output
+      - name: Detect outputPath from angular.json
+        id: detect-output
         run: |
-          echo "Checking dist folder..."
-          ls -la dist || true
-          # adjust folder name if your project name is different
-          if [ ! -f dist/Angular/index.html ]; then
-            echo "❌ dist/Angular/index.html not found! Check your angular.json 'outputPath' and update the --dir below."
-            exit 1
-          fi
+          OUTPUT=$(node -e '
+            const path = require("path");
+            const aj = require(path.resolve("angular.json"));
+            const projects = Object.keys(aj.projects || {});
+            if (!projects.length) { console.error("no projects in angular.json"); process.exit(2); }
+            const proj = aj.defaultProject || projects[0];
+            const out = aj.projects[proj]?.architect?.build?.options?.outputPath;
+            if (!out) { console.error("outputPath not found for project " + proj); process.exit(3); }
+            console.log(out);
+          ')
+          echo "output=$OUTPUT" >> $GITHUB_OUTPUT
 
-      - name: Deploy to GitHub Pages
+      - name: Verify build output & deploy
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx angular-cli-ghpages --dir=dist/Angular --no-silent --message "Deploy from GitHub Actions"
-
-# ssasas
+        run: |
+          BUILD_DIR="${{ steps.detect-output.outputs.output }}"
+          echo "Detected build directory: $BUILD_DIR"
+          if [ -z "$BUILD_DIR" ]; then
+            echo "ERROR: outputPath detection failed."
+            exit 1
+          fi
+          # show contents for debugging
+          echo "Listing $BUILD_DIR:"
+          ls -la "$BUILD_DIR" || true
+          if [ ! -f "$BUILD_DIR/index.html" ]; then
+            echo "❌ $BUILD_DIR/index.html not found! Build may have failed or outputPath is wrong."
+            exit 1
+          fi
+          echo "Deploying from $BUILD_DIR to GitHub Pages..."
+          npx angular-cli-ghpages --dir="$BUILD_DIR" --no-silent --message "Deploy from GitHub Actions"
