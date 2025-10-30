@@ -1,0 +1,100 @@
+{
+  "hash": "2bc37caf",
+  "configHash": "05c60490",
+  "lockfileHash": "444b91e4",
+  "browserHash": "9a95f8d1",
+  "optimized": {
+    "@angular/common": {
+      "src": "../../../../../../node_modules/@angular/common/fesm2022/common.mjs",
+      "file": "@angular_common.js",
+      "fileHash": "1676f581",
+      "needsInterop": false
+    },
+    "@angular/common/http": {
+      "src": "../../../../../../node_modules/@angular/common/fesm2022/http.mjs",
+      "file": "@angular_common_http.js",
+      "fileHash": "0bc0cc60",
+      "needsInterop": false
+    },
+    "@angular/core": {
+      "src": "../../../../../../node_modules/@angular/core/fesm2022/core.mjs",
+      "file": "@angular_core.js",
+      "fileHash": "c2801e42",
+      "needsInterop": false
+    },
+    "@angular/platform-browser": {
+      "src": "../../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
+      "file": "@angular_platform-browser.js",
+      "fileHash": "b2aa3a68",
+      "needsInterop": false
+    },
+    "@angular/router": {
+      "src": "../../../../../../node_modules/@angular/router/fesm2022/router.mjs",
+      "file": "@angular_router.js",
+      "fileHash": "dd5b420c",
+      "needsInterop": false
+    },
+    "@ngxs/devtools-plugin": {
+      "src": "../../../../../../node_modules/@ngxs/devtools-plugin/fesm2022/ngxs-devtools-plugin.mjs",
+      "file": "@ngxs_devtools-plugin.js",
+      "fileHash": "5c5e4aa3",
+      "needsInterop": false
+    },
+    "@ngxs/store": {
+      "src": "../../../../../../node_modules/@ngxs/store/fesm2022/ngxs-store.mjs",
+      "file": "@ngxs_store.js",
+      "fileHash": "a60f2e64",
+      "needsInterop": false
+    },
+    "@angular/forms": {
+      "src": "../../../../../../node_modules/@angular/forms/fesm2022/forms.mjs",
+      "file": "@angular_forms.js",
+      "fileHash": "55232111",
+      "needsInterop": false
+    },
+    "@ngxs/logger-plugin": {
+      "src": "../../../../../../node_modules/@ngxs/logger-plugin/fesm2022/ngxs-logger-plugin.mjs",
+      "file": "@ngxs_logger-plugin.js",
+      "fileHash": "dd75fefd",
+      "needsInterop": false
+    },
+    "tslib": {
+      "src": "../../../../../../node_modules/tslib/tslib.es6.mjs",
+      "file": "tslib.js",
+      "fileHash": "f86933ef",
+      "needsInterop": false
+    },
+    "rxjs": {
+      "src": "../../../../../../node_modules/rxjs/dist/esm5/index.js",
+      "file": "rxjs.js",
+      "fileHash": "760eb163",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-R7GQRZHA": {
+      "file": "chunk-R7GQRZHA.js"
+    },
+    "chunk-E3C6OPAU": {
+      "file": "chunk-E3C6OPAU.js"
+    },
+    "chunk-AY6ELSDS": {
+      "file": "chunk-AY6ELSDS.js"
+    },
+    "chunk-AHYMIUZ2": {
+      "file": "chunk-AHYMIUZ2.js"
+    },
+    "chunk-5CM2OCKZ": {
+      "file": "chunk-5CM2OCKZ.js"
+    },
+    "chunk-YPOJXTPD": {
+      "file": "chunk-YPOJXTPD.js"
+    },
+    "chunk-SCE2THVU": {
+      "file": "chunk-SCE2THVU.js"
+    },
+    "chunk-ICHT5QNQ": {
+      "file": "chunk-ICHT5QNQ.js"
+    }
+  }
+}
