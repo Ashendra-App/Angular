@@ -1,89 +1,38 @@
-name: Deploy Angular to GitHub Pages
+name: CI/CD for Angular
 
 on:
   push:
-    branches:
-      - main
+    branches: [ development ]
 
 jobs:
-  deploy:
+  build-test-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: 20
 
-      - name: Install dependencies (with retry)
-        run: |
-          RETRY=0
-          until [ $RETRY -ge 3 ]
-          do
-            npm ci && break
-            RETRY=$((RETRY+1))
-            echo "npm ci failed — retry #$RETRY"
-            sleep 3
-          done
-          if [ $RETRY -ge 3 ]; then
-            echo "npm ci failed after 3 attempts"
-            exit 1
-          fi
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint code
+        run: npm run lint
+
+      - name: Run tests
+        run: npm run test -- --watch=false --browsers=ChromeHeadless
 
       - name: Build Angular app
-        run: npm run build -- --configuration=production
+        run: ng build --configuration production
 
-      - name: Detect outputPath from angular.json
-        id: detect-output
-        run: |
-          OUTPUT=$(node -e '
-            const path = require("path");
-            const aj = require(path.resolve("angular.json"));
-            const projects = Object.keys(aj.projects || {});
-            if (!projects.length) { console.error("no projects in angular.json"); process.exit(2); }
-            const proj = aj.defaultProject || projects[0];
-            const out = aj.projects[proj]?.architect?.build?.options?.outputPath;
-            if (!out) { console.error("outputPath not found for project " + proj); process.exit(3); }
-            console.log(out);
-          ')
-          echo "output=$OUTPUT" >> $GITHUB_OUTPUT
-
-      - name: Find index.html and set TARGET_DIR
-        id: find-index
-        run: |
-          BUILD_DIR="${{ steps.detect-output.outputs.output }}"
-          if [ -z "$BUILD_DIR" ]; then
-            echo "ERROR: outputPath detection failed."
-            exit 1
-          fi
-          echo "Searching for index.html under: $BUILD_DIR"
-          IDX=$(find "$BUILD_DIR" -maxdepth 6 -type f -name 'index.html' -print -quit || true)
-          if [ -z "$IDX" ]; then
-            echo "❌ No index.html found under $BUILD_DIR (searched depth 6)."
-            find "$BUILD_DIR" -maxdepth 3 -type f -printf '%P\n' || true
-            exit 1
-          fi
-          TARGET_DIR=$(dirname "$IDX")
-          echo "target=$TARGET_DIR" >> $GITHUB_OUTPUT
-          echo "Found index.html at: $IDX"
-          ls -la "$TARGET_DIR" || true
-
-      - name: Configure git identity (required for gh-pages commit)
-        run: |
-          # Use the GitHub Actions actor to form a valid identity
-          git config --global user.name "${{ github.actor }}"
-          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
-          git --version
-          git config --list
-
-      - name: Deploy to GitHub Pages (auto-target)
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          TARGET="${{ steps.find-index.outputs.target }}"
-          echo "Deploying from: $TARGET"
-          npx angular-cli-ghpages --dir="$TARGET" --no-silent --message "Deploy from GitHub Actions"
+      # - name: Deploy to Firebase
+      #   if: success()
+      #   uses: FirebaseExtended/action-hosting-deploy@v0
+      #   with:
+      #     repoToken: "${{ secrets.GITHUB_TOKEN }}"
+      #     firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}"
+      #     channelId: live
