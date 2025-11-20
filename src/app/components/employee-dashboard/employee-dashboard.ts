@@ -51,12 +51,12 @@ export class EmployeeDashboard {
     EmployeeState.getLoadedInfo
   );
   constructor(private cd: ChangeDetectorRef, private _router: Router) {
-    // this.implementationOfRxjsOperator();
-    this.getEmpData();
-    this.employees$.subscribe((res) => {
-      this.empData = res;
-      this.cd.markForCheck();
-    });
+    this.implementationOfRxjsOperator();
+    // this.getEmpData();
+    // this.employees$.subscribe((res) => {
+    //   this.empData = res;
+    //   this.cd.markForCheck();
+    // });
   }
 
   getEmpData() {
